@@ -1,11 +1,20 @@
 express = require 'express'
 request = require 'request'
 http = require 'http'
+https = require 'https'
 fs = require 'fs'
 path = require 'path'
 _request = require 'request'
 passport = require 'passport'
 passport_instagram = require 'passport-instagram'
+
+ca1 = fs.readFileSync (path.join __dirname, 'ca-geotrust-1.cer')
+ca2 = fs.readFileSync (path.join __dirname, 'ca-geotrust-2.cer')
+agent = new https.Agent
+  host: 'api.sandbox.puffant.com'
+  port: 443
+  ca: [ca1, ca2]
+
 
 request = (opt, cb)->
   console.log "====="
@@ -18,7 +27,6 @@ request = (opt, cb)->
   console.log body
   console.log "====="
   return cb null, res, body
-
 
 
 passport.serializeUser (user, cb)-> cb null, user
@@ -78,6 +86,7 @@ app.get '/photos', (rq, rs, cb)->
 app.get '/photos/print', (rq, rs, cb)->
   await request 
     method: 'POST'
+    agent: agent
     url: "https://api.sandbox.puffant.com/v1/1/decks/?secret=f42ce33671ba94ce246cf9a0924312ccb7ed794d"
     defer e, res, data
   return cb e if e
@@ -90,6 +99,7 @@ app.get '/photos/print', (rq, rs, cb)->
   for photo in rq.user.feed
     await request
       method: 'POST'
+      agent: agent
       url: "https://api.sandbox.puffant.com/v1/1/decks/#{deck.id}/cards/?secret=f42ce33671ba94ce246cf9a0924312ccb7ed794d"
       form: 
         url: photo.url
@@ -112,4 +122,4 @@ app.get '/photos/print', (rq, rs, cb)->
 server = http.createServer app
 await server.listen 4000, defer e
 throw e if e
-console.log "puffant-instaprint running on http://localhost:#{server.address().port}/"
+console.log "puffant-instaprint 运行在了 http://localhost:#{server.address().port}/ ，请打开浏览器查看这个地址。"
