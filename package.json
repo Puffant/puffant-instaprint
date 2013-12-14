@@ -19,7 +19,7 @@
   "dependencies": {
     "passport": "~0.1.17",
     "passport-instagram": "~0.1.2",
-    "iced-coffee-script": "~1.6.3-g",
+    "iced-coffee-script": "~1.6.3-i",
     "request": "~2.27.0",
     "express": "~3.4.4",
     "jade": "~0.35.0"
