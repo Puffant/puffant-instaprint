@@ -96,24 +96,22 @@ app.get '/photos/print', (rq, rs, cb)->
   catch e
     return cb e
 
-  for photo in rq.user.feed
-    await request
-      method: 'POST'
-      agent: agent
-      url: "https://api.sandbox.puffant.com/v1/1/decks/#{deck.id}/cards/?secret=f42ce33671ba94ce246cf9a0924312ccb7ed794d"
-      form: 
-        url: photo.url
-        url_small: photo.url_small
-        url_medium: photo.url_medium
-        url_large: photo.url_large
-        caption: photo.caption
-      defer e, res, body
-    return cb e if e
-    return cb new Error body unless res.statusCode is 200
-    try
-      card = JSON.parse body
-    catch e
-      return cb e
+  cards = rq.user.feed.map (photo)->
+    url: photo.url
+    url_small: photo.url_small
+    url_medium: photo.url_medium
+    url_large: photo.url_large
+    caption: photo.caption
+
+  await request
+    method: 'POST'
+    agent: agent
+    url: "https://api.sandbox.puffant.com/v1/1/decks/#{deck.id}/cards/?secret=f42ce33671ba94ce246cf9a0924312ccb7ed794d"
+    form: 
+      cards: cards
+    defer e, res, body
+  return cb e if e
+  return cb new Error body unless res.statusCode is 200
 
   rs.redirect deck.url
   
